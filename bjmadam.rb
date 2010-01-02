@@ -24,7 +24,6 @@ def present_madam
     Dir.mkdir @directory_name
     Dir.chdir @directory_name
   end
-  p Dir.pwd
   Dir.glob('Madame*.jpg').map! { |file| Integer(file.scan(/\d+/).first) }
 end
 
@@ -70,7 +69,7 @@ if __FILE__ == $0
   when nil
     puts "No directory specified, select default one : #{Dir.pwd}"
   else
-    p "unknow argument"
+    puts "unknow argument : #{ARGV.first}"
     exit
   end
   
@@ -82,8 +81,6 @@ if __FILE__ == $0
   #check if we have some work ;)
   if madam_wanted.length > 0
     puts "We found #{madam_wanted.length} \"Madame\" to download ! !"
-  elsif madam_wanted < 0
-    puts "Error, you have more picture than the website. This script need a directory with only Madame's pict"
   else
     puts "Hey, calm down ! ! You need to wait for 10 a.m. of the day to have a new pict ;)"
   end

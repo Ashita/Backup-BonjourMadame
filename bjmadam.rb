@@ -4,20 +4,10 @@ require 'rubygems'
 require 'nokogiri'
 require 'open-uri'
 
-#checking console argument
-case ARGV.first
-when "-h", "--help", "/h", "/?"
-  puts "Usage : bjmadam.rb <argument> \n\tdirectory : the directory to save all the Madame\n\t\tdefault : current_directory/BonjourMadame\n\t -h, --help : this screen\nCreated by Ashita"
-  exit
-when /\w/
-  @directory_name = ARGV.first if File.directory? ARGV.first
-when nil
-  puts "No directory specified, select default one : #{Dir.pwd}"
-else
-  p "unknow argument"
-  exit
-end
-#end of console argument
+##variables definitions
+@directory_name = "BonjourMadame"
+@url = "http://www.bonjourmadame.fr/page"
+##end of variables definitions
 
 ##Functions définition
 #grab the page who contains the Madame
@@ -25,8 +15,8 @@ def madam_page(page_number)
   Nokogiri::HTML(open("#{@url}/#{page_number}"))
 end
 
-#get the number of Madame that you always have
-def number_of_present_madam
+#get all the Madames that you have already stored
+def present_madam
   begin
     Dir.chdir @directory_name
   rescue Errno::ENOENT => pouet
@@ -34,15 +24,9 @@ def number_of_present_madam
     Dir.mkdir @directory_name
     Dir.chdir @directory_name
   end
-  Dir.glob('Madame*.jpg').length
+  p Dir.pwd
+  Dir.glob('Madame*.jpg').map! { |file| Integer(file.scan(/\d+/).first) }
 end
-
-##variables définitions
-@directory_name = "BonjourMadame"
-@url = "http://www.bonjourmadame.fr/page"
-@max_madam = Integer(madam_page(1).css('div#pages')[0].text.scan(/\d+/).last)
-@present_madam = Integer(number_of_present_madam)
-##end of variables définitions
 
 #retrive the url of a Madame's picture
 def picture_url(page)
@@ -57,7 +41,7 @@ end
 
 #save picture data in a file
 def save_in_file(madam_number, data)
-  file_name = "Madame_n_#{madam_number}.jpg"
+  file_name = "Madame_#{madam_number}.jpg"
   begin
     File.open(file_name, "wb") do |file|
       file.write data
@@ -68,26 +52,48 @@ def save_in_file(madam_number, data)
   end
   puts "=> #{file_name} writed succesfully"
 end
+
+def madame_to_her_page(madam_number, max_madames)
+  max_madames - madam_number + 1
+end
 ##end of function definitions
 
 ## "main"
 if __FILE__ == $0
-  #check if we have some work ;)
-  madam_wanted = @max_madam - @present_madam
-  if madam_wanted > 0
-    puts "We found #{madam_wanted} \"Madame\" to download ! !"
-  elsif madam_wanted < 0
-    puts "Error, you have more picture than the website. This script need a clean directory"
+  #checking console argument
+  case ARGV.first
+  when "-h", "--help", "/h", "/?"
+    puts "Usage : bjmadam.rb <argument> \n\tdirectory : the directory to save all the Madame\n\t\tdefault : current_directory/BonjourMadame\n\t -h, --help : this screen\nCreated by Ashita"
+    exit
+  when /\w/
+    @directory_name = ARGV.first if File.directory? ARGV.first
+  when nil
+    puts "No directory specified, select default one : #{Dir.pwd}"
   else
-    puts "Hey, calm down ! ! You need to wait for 10am of the day to have a new pict ;)"
+    p "unknow argument"
+    exit
+  end
+  
+  #get the number of Madame on line
+  @max_madam = Integer(madam_page(1).css('div#pages')[0].text.scan(/\d+/).last)
+  #and remove it the madame that you already have
+  madam_wanted = (1..@max_madam).to_a - present_madam
+
+  #check if we have some work ;)
+  if madam_wanted.length > 0
+    puts "We found #{madam_wanted.length} \"Madame\" to download ! !"
+  elsif madam_wanted < 0
+    puts "Error, you have more picture than the website. This script need a directory with only Madame's pict"
+  else
+    puts "Hey, calm down ! ! You need to wait for 10 a.m. of the day to have a new pict ;)"
   end
 
   #do work
-  (1..madam_wanted).to_a.reverse.each do |n|
-    madam_number = @max_madam + 1 - n
-    puts "Fetching Madame #{madam_number} on page #{n}"
-    picture_url(madam_page(n)) do |link|
-      save_in_file madam_number, open(link).read
+  madam_wanted.each do |n|
+    page = madame_to_her_page Integer(n),@max_madam
+    puts "Fetching Madame #{n} on page #{page}"
+    picture_url(madam_page(page)) do |link|
+      save_in_file n, open(link).read
     end
   end
 end

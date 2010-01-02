@@ -12,7 +12,7 @@ def number_of_present_madam
   begin
     Dir.chdir @directory_name
   rescue Errno::ENOENT => pouet
-    puts "Doesn't find \"BonjourMadame\" directory, create it now !"
+    puts "Doesn't find \"#{@directory_name}\" directory, create it now !"
     Dir.mkdir @directory_name
     Dir.chdir @directory_name
   end
@@ -44,11 +44,17 @@ def save_in_file(madam_number, data)
     puts "Problème de permissions pour l'écriture"
     throw e
   end
-  puts "#{file_name} writed succesfully"
+  puts "=> #{file_name} writed succesfully"
 end
 
 madam_wanted = @max_madam - @present_madam
-puts("We found #{madam_wanted} \"Madame\" to download ! !")
+if madam_wanted > 0
+  puts "We found #{madam_wanted} \"Madame\" to download ! !"
+elsif madam_wanted < 0
+  puts "Error, you have more picture than the website. This script need a clean directory"
+else
+  puts "Hey, calm down ! ! You need to wait for 10am of the day to have a new pict ;)"
+end
 
 (1..madam_wanted).to_a.reverse.each do |n|
   madam_number = @max_madam + 1 - n

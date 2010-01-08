@@ -74,7 +74,8 @@ if __FILE__ == $0
   end
   
   #get the number of Madame on line
-  @max_madam = Integer(madam_page(1).css('div#pages')[0].text.scan(/\d+/).last)
+  @fucking_useless_page = 1
+  @max_madam = Integer(madam_page(1).css('div#pages')[0].text.scan(/\d+/).last) - @fucking_useless_page
   #and remove it the madame that you already have
   madam_wanted = (1..@max_madam).to_a - present_madam
 
@@ -87,7 +88,7 @@ if __FILE__ == $0
 
   #do work
   madam_wanted.each do |n|
-    page = madame_to_her_page Integer(n),@max_madam
+    page = madame_to_her_page Integer(n), @max_madam
     puts "Fetching Madame #{n} on page #{page}"
     picture_url(madam_page(page)) do |link|
       save_in_file n, open(link).read

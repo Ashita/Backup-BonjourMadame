@@ -77,7 +77,7 @@ if __FILE__ == $0
   end
 
   #init Typhoeus
-  hydra = Typhoeus::Hydra.new
+  hydra = Typhoeus::Hydra.new :max_concurrency => 20
 
   #do work
   madam_wanted.each do |n|

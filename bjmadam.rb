@@ -83,7 +83,7 @@ if __FILE__ == $0
   madam_wanted.each do |n|
     madam_number = Integer(n)
     page = max_madam - madam_number + 1
-    request = Typhoeus::Request.new("#{@url}/#{page}", :user_agent => "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_1; en-us) AppleWebKit/531.21.8 (KHTML, like Gecko) Version/4.0.4 Safari/531.21.10")
+    request = Typhoeus::Request.new("#{@url}/#{page}", :user_agent => "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_1; en-us) AppleWebKit/531.21.8 (KHTML, like Gecko) Version/4.0.4 Safari/531.21.10", :follow_location => true)
     request.on_complete do |response|
       puts "Fetching Madame #{n} on page #{page}"
       Nokogiri::HTML(response.body).css('div.photo').children.each do |node|

@@ -9,6 +9,7 @@ require 'typhoeus'
 
 ##variables definitions
 @directory_name = "BonjourMadame"
+@file_name = "Madame"
 @url = "http://www.bonjourmadame.fr/page"
 ##end of variables definitions
 
@@ -27,7 +28,7 @@ def present_madam
     Dir.mkdir @directory_name
     Dir.chdir @directory_name
   end
-  Dir.glob('Madame*.jpg').map! { |file| Integer(file.scan(/\d+/).first) }
+  Dir.glob("#{@file_name}_*.jpg").map! { |file| Integer(file.scan(/\d+/).first) }
 end
 
 #retrive the url of a Madame's picture
@@ -90,8 +91,8 @@ if __FILE__ == $0
           img_request = Typhoeus::Request.new(image_link, :user_agent => "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_1; en-us) AppleWebKit/531.21.8 (KHTML, like Gecko) Version/4.0.4 Safari/531.21.10", :follow_location => true)
           img_request.on_complete do |response|
             if response.body
-              File.open("Madame_#{madam_number}.jpg", 'w') {|f| f.write(response.body) }
-              puts "Madame_#{madam_number}.jpg writted"
+              File.open("#{@file_name}_#{madam_number}.jpg", 'w') {|f| f.write(response.body) }
+              puts "#{@file_name}_#{madam_number}.jpg writted"
             end
           end
           hydra.queue img_request

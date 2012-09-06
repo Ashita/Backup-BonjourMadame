@@ -2,10 +2,14 @@
 # encoding: UTF-8
 
 require 'rubygems'
+require 'bundler/setup'
+
+#gems
 require 'nokogiri'
-require 'open-uri'
 require 'typhoeus'
-# require 'json'
+require 'awesome_print'
+
+require 'open-uri'
 
 ##variables definitions
 @directory_name = "BonjourMadame"

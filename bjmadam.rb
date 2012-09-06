@@ -25,12 +25,10 @@ URL = "http://www.bonjourmadame.fr/page"
 # URL = "http://bonjourlesgeeks.com/page"
 
 ##Functions définition
-#grab the page who contains the Madame
 def madam_page(page_number)
   Nokogiri::HTML(open("#{URL}/#{page_number}"))
 end
 
-#get all the Madames that you have already stored
 def present_madam
   begin
     Dir.chdir DIRECTORY_NAME
@@ -40,17 +38,6 @@ def present_madam
     Dir.chdir DIRECTORY_NAME
   end
   Dir.glob("#{FILE_NAME}_*.jpg").map! { |file| Integer(file.scan(/\d+/).first) }
-end
-
-#retrive the url of a Madame's picture
-def picture_url(page)
-  page.css('div.photo').children.each do |node|
-    if node.name == "a"
-      yield node.attributes["href"].value
-    elsif node.name == "img"
-      yield node.attributes["src"].value
-    end
-  end
 end
 
 def add_request(hydra, url)
@@ -77,7 +64,7 @@ if __FILE__ == $0
   #checking console argument
   case ARGV.first
   when "-h", "--help", "/h", "/?"
-    puts "Usage : bjmadam.rb <argument> \n\tdirectory : the directory to save all the Madame\n\t\tdefault : current_directory/BonjourMadame\n\t -h, --help : this screen\nCreated by Ashita"
+    puts "Usage : bjmadam.rb <argument> \n\tdirectory : the directory to save all the \"Madame\"\n\t\tdefault : current_directory/BonjourMadame\n\t -h, --help : this screen\nCreated by Ashita"
     exit
   when /\w/
     DIRECTORY_NAME = ARGV.first if File.directory? ARGV.first
@@ -95,7 +82,7 @@ if __FILE__ == $0
   madam_on_disk = present_madam
   madam_wanted = (1..max_madam).to_a - madam_on_disk
 
-  puts "#{madam_on_disk.length} found in this directory" if madam_on_disk.any?
+  puts "#{madam_on_disk.length} \"Madame\" found in this directory" if madam_on_disk.any?
 
   #check if we have some work ;)
   if madam_wanted.length > 0
@@ -112,16 +99,16 @@ if __FILE__ == $0
     madam_number = Integer(n)
     page = max_madam - madam_number + 1
     add_request(hydra, "#{URL}/#{page}") do |response|
-      puts "Fetching Madame #{n} on page #{page}"
+      puts "Fetching \"Madame\" #{n}"
       if response.body
         Nokogiri::HTML(response.body).css('div.photo').children.each do |node|
           if node.name == "a"
             add_request(hydra, node.attributes["href"].value) do |response|
               if response.body
                 image = Nokogiri::HTML(response.body).css('#image').first
-                image ? add_request_for_image(hydra, image.attributes['src'].value, madam_number) : puts("can't download madam #{madam_number} on page #{page}")
+                image ? add_request_for_image(hydra, image.attributes['src'].value, madam_number) : puts("can't download \"Madame\" #{madam_number} on #{URL}/#{page}")
               else
-                puts "no page on #{madam_number} for page #{page}"
+                puts "no page for \"Madame\"#{n} on #{URL}/#{page}"
               end
             end
             break;
@@ -131,7 +118,7 @@ if __FILE__ == $0
           end
         end
       else
-        puts "Page #{page} not found"
+        puts "Page #{URL}/#{page} not found"
       end
     end
   end

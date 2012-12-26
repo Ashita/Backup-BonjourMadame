@@ -57,6 +57,10 @@ def add_request_for_image(hydra, url, madam_number)
   end
 end
 
+def lunch_typhoeus(hydra)
+  @running ||= hydra.run
+end
+
 ##end of function definitions
 
 ## "main"
@@ -77,7 +81,7 @@ if __FILE__ == $0
 
   #get the number of Madame on line
   @fucking_useless_page = 1
-  max_madam = Integer(madam_page(1).css('div#pages')[0].text.scan(/\d+/).last) - @fucking_useless_page
+  max_madam = Integer(madam_page(1).css('div.current-page')[0].text.scan(/\d+/).last)
   #and remove to that the picture that you already have
   madam_on_disk = present_madam
   madam_wanted = (1..max_madam).to_a - madam_on_disk
@@ -92,7 +96,7 @@ if __FILE__ == $0
   end
 
   #init Typhoeus
-  hydra = Typhoeus::Hydra.new :max_concurrency => 5
+  hydra = Typhoeus::Hydra.new :max_concurrency => 2
 
   #do work
   madam_wanted.each do |n|
@@ -100,28 +104,14 @@ if __FILE__ == $0
     page = max_madam - madam_number + 1
     add_request(hydra, "#{URL}/#{page}") do |response|
       puts "Fetching \"Madame\" #{n}"
-      if response.body
-        Nokogiri::HTML(response.body).css('div.photo').children.each do |node|
-          if node.name == "a"
-            add_request(hydra, node.attributes["href"].value) do |response|
-              if response.body
-                image = Nokogiri::HTML(response.body).css('#image').first
-                image ? add_request_for_image(hydra, image.attributes['src'].value, madam_number) : puts("can't download \"Madame\" #{madam_number} on #{URL}/#{page}")
-              else
-                puts "no page for \"Madame\"#{n} on #{URL}/#{page}"
-              end
-            end
-            break;
-          elsif image_link = node.name == "img" ? node.attributes["src"].value : nil
-            add_request_for_image(hydra, image_link, madam_number)
-            break;
-          end
+      if response.code == 200
+        Nokogiri::HTML(response.body).css('a.photo-url').each do |node|
+          add_request_for_image(hydra, node.attributes["href"].value, madam_number)
         end
       else
-        puts "Page #{URL}/#{page} not found"
+        puts "Page #{URL}/#{page} not found : #{responce.code}"
       end
     end
   end
-
-  hydra.run
+  lunch_typhoeus(hydra)
 end
